@@ -1,0 +1,9 @@
+{
+    "VALIDATION_REQUIRED_EMAIL": "Email is required",
+    "VALIDATION_REQUIRED_PASSWORD": "Password is required",
+    "VALIDATION_INVALID_EMAIL": "Email is invalid",
+    "VALIDATION_INVALID_PASSWORD": "Password is invalid",
+    "VALIDATION_REQUIRED_NAME": "Name is required",
+    "VALIDATION_REQUIRED_ROLE": "Role is required",
+    "VALIDATION_REQUIRED_USERNAME": "Username is required"
+}
