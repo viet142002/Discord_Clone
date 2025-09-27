@@ -3,11 +3,12 @@ import {
     Catch,
     ArgumentsHost,
     BadRequestException,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { I18nService } from 'src/modules/i18n/i18n.service';
 
-@Catch(BadRequestException)
+@Catch(BadRequestException, UnauthorizedException)
 export class I18nBadRequestFilter implements ExceptionFilter {
     private i18nService = new I18nService();
     constructor() {}
@@ -22,10 +23,9 @@ export class I18nBadRequestFilter implements ExceptionFilter {
             message: string[];
             error: string;
         };
-
-        const translated: string[] = (res.message || []).map((msg: string) =>
-            this.i18nService.translate(msg, lang),
-        );
+        const translated: string[] = (
+            Array.isArray(res.message) ? res.message : [res.message]
+        ).map((msg: string) => this.i18nService.translate(msg, lang));
 
         response.status(status).json({
             statusCode: status,

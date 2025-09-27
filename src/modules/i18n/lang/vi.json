@@ -5,5 +5,10 @@
     "VALIDATION_INVALID_PASSWORD": "Mật khẩu không hợp lệ",
     "VALIDATION_REQUIRED_NAME": "Tên không được bỏ trống",
     "VALIDATION_REQUIRED_ROLE": "Vai trò không được bỏ trống",
-    "VALIDATION_REQUIRED_USERNAME": "Tên người dùng không được bỏ trống"
+    "VALIDATION_REQUIRED_USERNAME": "Tên người dùng không được bỏ trống",
+    "USER_NOT_FOUND": "Người dùng không tồn tại",
+    "USER_PASSWORD_NOT_VALID": "Mật khẩu không hợp lệ",
+    "LOGIN_SUCCESS": "Đăng nhập thành công",
+    "USER_EXISTS": "Người dùng đã tồn tại",
+    "USER_REGISTER_SUCCESS": "Đăng ký thành công"
 }

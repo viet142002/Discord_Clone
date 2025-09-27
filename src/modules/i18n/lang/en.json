@@ -5,5 +5,10 @@
     "VALIDATION_INVALID_PASSWORD": "Password is invalid",
     "VALIDATION_REQUIRED_NAME": "Name is required",
     "VALIDATION_REQUIRED_ROLE": "Role is required",
-    "VALIDATION_REQUIRED_USERNAME": "Username is required"
+    "VALIDATION_REQUIRED_USERNAME": "Username is required",
+    "USER_NOT_FOUND": "User not found",
+    "USER_PASSWORD_NOT_VALID": "Password is not valid",
+    "LOGIN_SUCCESS": "Login success",
+    "USER_EXISTS": "User already exists",
+    "USER_REGISTER_SUCCESS": "Register success"
 }
