@@ -14,3 +14,7 @@ export async function comparePassword(
 ): Promise<boolean> {
     return bcrypt.compare(password, hash);
 }
+
+export async function hash(str: string): Promise<string> {
+    return bcrypt.hash(str, SALT_ROUNDS);
+}

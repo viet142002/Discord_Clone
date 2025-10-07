@@ -10,5 +10,8 @@
     "USER_PASSWORD_NOT_VALID": "Mật khẩu không hợp lệ",
     "LOGIN_SUCCESS": "Đăng nhập thành công",
     "USER_EXISTS": "Người dùng đã tồn tại",
-    "USER_REGISTER_SUCCESS": "Đăng ký thành công"
+    "USER_REGISTER_SUCCESS": "Đăng ký thành công",
+    "VALIDATION_REQUIRED_DEVICE_INFO": "Thông tin thiết bị không được bỏ trống",
+    "CANT_ACCESS_RESOURCE": "Không thể truy cập tài nguyên này",
+    "TOKEN_NOT_VALID": "Token không hợp lệ"
 }

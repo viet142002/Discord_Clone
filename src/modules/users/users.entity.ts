@@ -1,15 +1,19 @@
+import { Membership } from 'src/modules/serverMemberships/membership.entity';
+import { Session } from 'src/modules/sessions/session.entity';
 import {
     Column,
     CreateDateColumn,
     Entity,
     UpdateDateColumn,
     PrimaryGeneratedColumn,
+    OneToMany,
+    ManyToOne,
 } from 'typeorm';
 
 @Entity({ name: 'users' })
 export class User {
     @PrimaryGeneratedColumn('uuid')
-    id: number;
+    id: string;
 
     @Column({ type: 'varchar', length: 255 })
     name: string;
@@ -31,4 +35,10 @@ export class User {
 
     @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
+
+    @OneToMany(() => Membership, (Membership) => Membership.user)
+    memberships: Membership[];
+
+    @ManyToOne(() => Session, (Session) => Session.user)
+    sessions: Session[];
 }

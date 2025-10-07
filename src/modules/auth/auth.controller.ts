@@ -1,19 +1,21 @@
-import { I18nService } from 'src/modules/i18n/i18n.service';
 import {
     BadRequestException,
     Body,
     Controller,
-    Get,
     HttpCode,
     HttpStatus,
     Post,
+    Req,
     Res,
 } from '@nestjs/common';
+import type { Request, Response } from 'express';
+
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { KEY_STORES } from 'src/common/constants';
-import type { Response } from 'express';
 import { RegisterDto } from 'src/modules/auth/dto/register.dto';
+import { Public } from 'src/common/decorators';
+import { I18nService } from 'src/modules/i18n/i18n.service';
 
 @Controller('auth')
 export class AuthController {
@@ -22,14 +24,17 @@ export class AuthController {
         private i18nService: I18nService,
     ) {}
 
+    @Public()
     @Post('login')
     @HttpCode(HttpStatus.OK)
     async login(
         @Body() loginDto: LoginDto,
+        @Req() req: Request,
         @Res({ passthrough: true }) res: Response,
     ) {
-        const dataLogin = await this.authService.login(loginDto);
-        res.cookie(KEY_STORES.ACCESS_TOKEN, dataLogin.accessToken, {
+        const platform = req.platform;
+        const dataLogin = await this.authService.login(loginDto, platform);
+        res.cookie(KEY_STORES.ACCESS_TOKEN, 'Bearer ' + dataLogin.accessToken, {
             httpOnly: true,
             secure: true,
             sameSite: 'lax',
@@ -50,6 +55,7 @@ export class AuthController {
         };
     }
 
+    @Public()
     @Post('register')
     async register(@Body() registerDto: RegisterDto) {
         const found = await this.authService.userExists({
@@ -66,12 +72,34 @@ export class AuthController {
         };
     }
 
-    @Get('logout')
-    logout() {
-        return 'logout';
+    @Post('logout')
+    async logout(
+        @Req() req: Request,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        if (!req.user) {
+            throw new BadRequestException('USER_NOT_FOUND');
+        }
+        await this.authService.logout(req.user.sessionId);
+        res.clearCookie(KEY_STORES.ACCESS_TOKEN, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            path: '/',
+        });
+        res.clearCookie(KEY_STORES.REFRESH_TOKEN, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            path: '/auth/refresh',
+        });
+        return {
+            message: this.i18nService.translate('USER_LOGOUT_SUCCESS'),
+        };
     }
 
-    @Get('refresh')
+    @Public()
+    @Post('refresh')
     refresh() {
         return 'refresh';
     }

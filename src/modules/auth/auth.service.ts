@@ -1,20 +1,35 @@
+import { Platform } from './../sessions/dto/CreateSession.dto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { comparePassword } from 'src/common/helpers/bcrypt.helper';
 import { LoginDto } from 'src/modules/auth/dto/login.dto';
 import { RegisterDto } from 'src/modules/auth/dto/register.dto';
+import { SessionService } from 'src/modules/sessions/session.service';
 import { User } from 'src/modules/users/users.entity';
 import { UsersService } from 'src/modules/users/users.service';
 import { FindOptionsWhere } from 'typeorm';
 
+interface PayloadToken {
+    username: string;
+    id: string;
+    role: string;
+    sessionId: string;
+}
+
 @Injectable()
 export class AuthService {
+    private refreshExpiredIn: number;
     constructor(
         private usersService: UsersService,
         private jwtService: JwtService,
         private configService: ConfigService,
-    ) {}
+        private sessionService: SessionService,
+    ) {
+        this.refreshExpiredIn = this.configService.get<number>(
+            'JWT_REFRESH_EXPIRATION_TIME',
+        ) as number;
+    }
 
     async userExists(queries: FindOptionsWhere<User>): Promise<boolean> {
         const user = await this.usersService.findOneQueries(queries);
@@ -42,13 +57,31 @@ export class AuthService {
         return await this.usersService.create(user);
     }
 
-    async login(user: LoginDto): Promise<{
+    async login(
+        user: LoginDto,
+        platform: Platform,
+    ): Promise<{
         user: Omit<User, 'password'>;
         accessToken: string;
         refreshToken: string;
     }> {
         const userLogin = await this.validateUser(user.loginId, user.password);
-        const payload = {
+        const exitsSession = await this.sessionService.findOne({
+            userId: userLogin.id,
+            platform,
+        });
+
+        if (exitsSession) {
+            await this.sessionService.delete(exitsSession.id);
+        }
+
+        const session = await this.sessionService.create({
+            userId: userLogin.id,
+            device: user.device,
+            platform,
+        });
+        const payload: PayloadToken = {
+            sessionId: session.id,
             username: userLogin.username,
             id: userLogin.id,
             role: userLogin.role,
@@ -60,18 +93,39 @@ export class AuthService {
         };
     }
 
-    generateTokens(payload: Record<string, unknown>): {
+    async logout(sessionId: string): Promise<void> {
+        await this.sessionService.delete(sessionId);
+    }
+
+    generateTokens(payload: PayloadToken): {
         accessToken: string;
         refreshToken: string;
     } {
         const accessToken = this.jwtService.sign(payload);
         const refreshToken = this.jwtService.sign(payload, {
             secret: this.configService.get('JWT_SECRET_REFRESH_KEY'),
-            expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION_TIME'),
+            expiresIn: this.refreshExpiredIn,
         });
         return {
             accessToken,
             refreshToken,
         };
+    }
+
+    async verifyToken(
+        token: string,
+        type: 'access' | 'refresh',
+    ): Promise<PayloadToken> {
+        try {
+            if (type === 'refresh') {
+                return this.jwtService.verify(token, {
+                    secret: this.configService.get('JWT_SECRET_REFRESH_KEY'),
+                });
+            }
+            return this.jwtService.verify(token);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err) {
+            throw new UnauthorizedException();
+        }
     }
 }
