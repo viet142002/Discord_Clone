@@ -1,19 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
-import { Server } from './server.entity';
+import { BaseService } from 'src/modules/base/base.service';
+import { ServerWithRelationsEntity } from 'src/modules/servers/entity/serverWithRelations.entity';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @Injectable()
-export class ServersService {
-    constructor(
-        @InjectRepository(Server)
-        private readonly serverRepo: Repository<Server>,
-    ) {}
-
-    async create() {}
-
-    async findAll(): Promise<Server[]> {
-        return await this.serverRepo.find();
+export class ServersService extends BaseService<
+    'server',
+    ServerWithRelationsEntity
+> {
+    constructor(prisma: PrismaService) {
+        super(prisma, 'server');
     }
 }

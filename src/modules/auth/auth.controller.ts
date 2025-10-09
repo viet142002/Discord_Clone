@@ -59,7 +59,6 @@ export class AuthController {
     @Post('register')
     async register(@Body() registerDto: RegisterDto) {
         const found = await this.authService.userExists({
-            username: registerDto.username,
             email: registerDto.email,
         });
 

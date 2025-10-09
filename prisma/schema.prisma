@@ -1,0 +1,107 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+enum Platform {
+    WEB
+    MOBILE
+}
+
+enum ChannelType {
+    VOICE
+    TEXT
+}
+
+model User {
+    id        String     @id @default(uuid())
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+    email     String     @unique
+    name      String
+    password  String
+    members   Member[]
+    sessions  Session[]
+    roles     UserRole[]
+}
+
+model Session {
+    id         String   @id @default(uuid())
+    device     String
+    platform   Platform
+    userId     String
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, platform])
+}
+
+model Server {
+    id          String    @id @default(uuid())
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    name        String
+    iconUrl     String
+    description String
+    members     Member[]
+    channels    Channel[]
+    roles       Role[]
+}
+
+model Member {
+    id       String   @id @default(uuid())
+    joinedAt DateTime @default(now())
+    userId   String
+    user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    server   Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+    serverId String
+
+    @@unique([userId, serverId])
+}
+
+model Channel {
+    id                 String                  @id @default(uuid())
+    createdAt          DateTime                @default(now())
+    updatedAt          DateTime                @updatedAt
+    name               String
+    type               ChannelType             @default(TEXT)
+    isPrivate          Boolean                 @default(false)
+    serverId           String
+    server             Server                  @relation(fields: [serverId], references: [id], onDelete: Cascade)
+    channelPermissions ChannelRolePermission[]
+}
+
+model Role {
+    id                 String                  @id @default(uuid())
+    name               String
+    serverId           String
+    server             Server                  @relation(fields: [serverId], references: [id], onDelete: Cascade)
+    users              UserRole[]
+    channelPermissions ChannelRolePermission[]
+}
+
+model UserRole {
+    id     String  @id @default(uuid())
+    role   Role   @relation(fields: [roleId], references: [id])
+    roleId String
+    user   User   @relation(fields: [userId], references: [id])
+    userId String
+
+    @@unique([roleId, userId])
+}
+
+model ChannelRolePermission {
+    id        String   @id @default(uuid())
+    role      Role?    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+    roleId    String?
+    channel   Channel? @relation(fields: [channelId], references: [id], onDelete: Cascade)
+    channelId String?
+    canView   Boolean  @default(true)
+    canSend   Boolean  @default(true)
+    canManage Boolean  @default(false)
+
+    @@unique([roleId, channelId])
+}

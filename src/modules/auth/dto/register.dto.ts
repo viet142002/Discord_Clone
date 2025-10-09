@@ -4,12 +4,6 @@ export class RegisterDto {
     @IsNotEmpty({ message: 'VALIDATION_REQUIRED_NAME' })
     name: string;
 
-    @IsNotEmpty({ message: 'VALIDATION_REQUIRED_ROLE' })
-    role: string;
-
-    @IsNotEmpty({ message: 'VALIDATION_REQUIRED_USERNAME' })
-    username: string;
-
     @IsNotEmpty({ message: 'VALIDATION_REQUIRED_EMAIL' })
     @IsEmail(undefined, { message: 'VALIDATION_INVALID_EMAIL' })
     email: string;

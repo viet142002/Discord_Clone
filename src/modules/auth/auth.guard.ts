@@ -43,8 +43,10 @@ export class AuthGuard implements CanActivate {
             throw new UnauthorizedException('TOKEN_NOT_VALID');
         }
 
-        const session = await this.sessionService.findOne({
-            sessionId: payload.sessionId,
+        const session = await this.sessionService.findUnique({
+            where: {
+                id: payload.sessionId,
+            },
         });
 
         if (!session) {

@@ -1,19 +1,14 @@
-import { Platform } from './../sessions/dto/CreateSession.dto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { Platform, Prisma, User } from '@prisma/client';
 import { comparePassword } from 'src/common/helpers/bcrypt.helper';
 import { LoginDto } from 'src/modules/auth/dto/login.dto';
-import { RegisterDto } from 'src/modules/auth/dto/register.dto';
 import { SessionService } from 'src/modules/sessions/session.service';
-import { User } from 'src/modules/users/users.entity';
 import { UsersService } from 'src/modules/users/users.service';
-import { FindOptionsWhere } from 'typeorm';
 
 interface PayloadToken {
-    username: string;
     id: string;
-    role: string;
     sessionId: string;
 }
 
@@ -31,8 +26,10 @@ export class AuthService {
         ) as number;
     }
 
-    async userExists(queries: FindOptionsWhere<User>): Promise<boolean> {
-        const user = await this.usersService.findOneQueries(queries);
+    async userExists(queries: Prisma.UserWhereUniqueInput): Promise<boolean> {
+        const user = await this.usersService.findUnique({
+            where: queries,
+        });
         return !!user;
     }
 
@@ -40,7 +37,9 @@ export class AuthService {
         loginId: string,
         password: string,
     ): Promise<Omit<User, 'password'>> {
-        const user = await this.usersService.findOne(loginId);
+        const user = await this.usersService.findUnique({
+            where: { id: loginId },
+        });
         if (!user) {
             throw new UnauthorizedException('USER_NOT_FOUND');
         }
@@ -53,8 +52,10 @@ export class AuthService {
         throw new UnauthorizedException('USER_PASSWORD_NOT_VALID');
     }
 
-    async register(user: RegisterDto): Promise<User> {
-        return await this.usersService.create(user);
+    async register(
+        user: Prisma.UserCreateInput,
+    ): Promise<Omit<User, 'password'>> {
+        return this.usersService.createUser(user);
     }
 
     async login(
@@ -66,25 +67,32 @@ export class AuthService {
         refreshToken: string;
     }> {
         const userLogin = await this.validateUser(user.loginId, user.password);
-        const exitsSession = await this.sessionService.findOne({
-            userId: userLogin.id,
-            platform,
+        const exitsSession = await this.sessionService.findUnique({
+            where: {
+                userId_platform: {
+                    userId: userLogin.id,
+                    platform,
+                },
+            },
         });
 
         if (exitsSession) {
-            await this.sessionService.delete(exitsSession.id);
+            await this.sessionService.delete({
+                where: {
+                    id: exitsSession.id,
+                },
+            });
         }
-
         const session = await this.sessionService.create({
-            userId: userLogin.id,
-            device: user.device,
-            platform,
+            data: {
+                userId: userLogin.id,
+                device: user.device,
+                platform,
+            },
         });
         const payload: PayloadToken = {
             sessionId: session.id,
-            username: userLogin.username,
             id: userLogin.id,
-            role: userLogin.role,
         };
         const token = this.generateTokens(payload);
         return {
@@ -94,7 +102,11 @@ export class AuthService {
     }
 
     async logout(sessionId: string): Promise<void> {
-        await this.sessionService.delete(sessionId);
+        await this.sessionService.delete({
+            where: {
+                id: sessionId,
+            },
+        });
     }
 
     generateTokens(payload: PayloadToken): {

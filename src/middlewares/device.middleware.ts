@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Platform } from '@prisma/client';
 import { Request } from 'express';
 
 @Injectable()
@@ -9,13 +10,16 @@ export class DeviceMiddleware {
         const xPlatform = req.headers['x-platform'] || '';
 
         if (xPlatform === 'mobile' || xPlatform === 'web') {
-            req.platform = xPlatform;
+            req.platform =
+                xPlatform === 'mobile' ? Platform.MOBILE : Platform.WEB;
             next();
             return;
         }
 
         const userAgent = req.headers['user-agent'] || '';
-        req.platform = this.regexMobile.test(userAgent) ? 'mobile' : 'web';
+        req.platform = this.regexMobile.test(userAgent)
+            ? Platform.MOBILE
+            : Platform.WEB;
         next();
     }
 }

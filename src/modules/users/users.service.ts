@@ -1,41 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './users.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { CreateUserDto } from 'src/modules/users/dto';
+import { Prisma, User } from '@prisma/client';
+
 import { hashPassword } from 'src/common/helpers/bcrypt.helper';
+import { BaseService } from 'src/modules/base/base.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { UserWithRelationsEntity } from 'src/modules/users/entity/userWithRelations.entity';
 
 @Injectable()
-export class UsersService {
-    constructor(
-        @InjectRepository(User)
-        private readonly userRepo: Repository<User>,
-    ) {}
+export class UsersService extends BaseService<'user', UserWithRelationsEntity> {
+    constructor(prisma: PrismaService) {
+        super(prisma, 'user');
+    }
 
-    async create(createUserDto: CreateUserDto): Promise<User> {
-        const hashPass = await hashPassword(createUserDto.password);
-        return await this.userRepo.save({
-            ...createUserDto,
-            password: hashPass,
+    async createUser(
+        data: Prisma.UserCreateInput,
+    ): Promise<Omit<User, 'password'>> {
+        const hashPass = await hashPassword(data.password);
+        const baseResult = await super.create({
+            data: {
+                ...data,
+                password: hashPass,
+            },
         });
-    }
 
-    async findById(id: string): Promise<User | null> {
-        return await this.userRepo.findOneBy({ id });
-    }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userCreated } = baseResult;
 
-    async findOne(loginId: string): Promise<User | null> {
-        return await this.userRepo.findOneBy([
-            { username: loginId },
-            { email: loginId },
-        ]);
-    }
-
-    async findOneQueries(
-        queries: FindOptionsWhere<User> | FindOptionsWhere<User>[],
-    ): Promise<User | null> {
-        return await this.userRepo.findOne({
-            where: queries,
-        });
+        return userCreated;
     }
 }

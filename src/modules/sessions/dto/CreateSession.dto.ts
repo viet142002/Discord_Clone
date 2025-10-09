@@ -10,5 +10,3 @@ export class CreateSessionDto {
     @IsNotEmpty({ message: 'VALIDATION_REQUIRED_DEVICE_INFO' })
     device: string;
 }
-
-export type Platform = 'web' | 'mobile';
