@@ -7,12 +7,14 @@ import configuration from 'src/configs/configuration';
 import { typeOrmConfig } from 'src/configs/typeorm.config';
 import { DeviceMiddleware } from 'src/middlewares/device.middleware';
 import { LangMiddleware } from 'src/middlewares/lang.middleware';
+import { RequestContextMiddleware } from 'src/middlewares/requestContext.middleware';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { ChannelModule } from 'src/modules/channels/channel.module';
 import { I18nModule } from 'src/modules/i18n/i18n.module';
 import { MemberModule } from 'src/modules/members/member.module';
 import { PrismaModule } from 'src/modules/prisma/prisma.module';
 import { RedisModule } from 'src/modules/redis/redis.module';
+import { RoleModule } from 'src/modules/roles/role.module';
 import { ServersModule } from 'src/modules/servers/servers.module';
 import { SessionModule } from 'src/modules/sessions/session.module';
 import { UsersModule } from 'src/modules/users/users.module';
@@ -24,6 +26,7 @@ import { UsersModule } from 'src/modules/users/users.module';
         I18nModule,
         ServersModule,
         MemberModule,
+        RoleModule,
         ChannelModule,
         SessionModule,
         RedisModule,
@@ -45,7 +48,8 @@ import { UsersModule } from 'src/modules/users/users.module';
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(DeviceMiddleware).forRoutes('/auth');
         consumer.apply(LangMiddleware).forRoutes('*');
+        consumer.apply(RequestContextMiddleware).forRoutes('*');
+        consumer.apply(DeviceMiddleware).forRoutes('/auth');
     }
 }

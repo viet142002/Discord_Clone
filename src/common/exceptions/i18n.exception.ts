@@ -2,35 +2,71 @@ import {
     ExceptionFilter,
     Catch,
     ArgumentsHost,
-    BadRequestException,
-    UnauthorizedException,
+    HttpException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { I18nService } from 'src/modules/i18n/i18n.service';
 
-@Catch(BadRequestException, UnauthorizedException)
+interface IResponse {
+    message: string[];
+    error: string;
+}
+
+@Catch()
 export class I18nBadRequestFilter implements ExceptionFilter {
     private i18nService = new I18nService();
     constructor() {}
-    catch(exception: BadRequestException, host: ArgumentsHost) {
+    catch(exception: HttpException, host: ArgumentsHost) {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
-        const request = ctx.getRequest<Request>();
+        if (!!exception.getStatus && !!exception.getResponse) {
+            this.commonException(exception, response);
+            return;
+        }
+
+        if ('code' in exception && exception.code === 'P2025') {
+            this.deleteNotFoundException(response);
+            return;
+        }
+
+        this.unknownException(response);
+    }
+
+    commonException(
+        exception: HttpException,
+        response: Response<any, Record<string, any>>,
+    ) {
         const status = exception.getStatus();
+        const res = exception.getResponse() as IResponse;
 
-        const lang = request.lang || 'en';
-        const res = exception.getResponse() as {
-            message: string[];
-            error: string;
-        };
-        const translated: string[] = (
-            Array.isArray(res.message) ? res.message : [res.message]
-        ).map((msg: string) => this.i18nService.translate(msg, lang));
+        const messages = Array.isArray(res.message)
+            ? res.message
+            : [res.message];
 
-        response.status(status).json({
+        const translated = messages.map((msg) =>
+            this.i18nService.translate(msg),
+        );
+
+        return response.status(status).json({
             statusCode: status,
             message: translated,
-            error: res.error,
+            error: res.error || exception.name,
+        });
+    }
+
+    deleteNotFoundException(response: Response<any, Record<string, any>>) {
+        return response.status(404).json({
+            statusCode: 404,
+            message: [this.i18nService.translate('NOT_FOUND')],
+            error: 'Not Found',
+        });
+    }
+
+    unknownException(response: Response<any, Record<string, any>>) {
+        return response.status(500).json({
+            statusCode: 500,
+            message: [this.i18nService.translate('INTERNAL_SERVER_ERROR')],
+            error: 'Internal Server Error',
         });
     }
 }

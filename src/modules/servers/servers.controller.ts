@@ -1,30 +1,81 @@
-import { Controller, Post } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Post,
+    Req,
+} from '@nestjs/common';
+import type { Request } from 'express';
+
+import { CreateServerDto } from 'src/modules/servers/dto/createServer.dto';
+import { JoinServerDto } from 'src/modules/servers/dto/joinServer.dto';
+import { ServersService } from 'src/modules/servers/servers.service';
 
 @Controller('servers')
 export class ServersController {
-    constructor() {}
+    constructor(private serversService: ServersService) {}
 
     @Post('create')
-    async createServer() {
+    async createServer(
+        @Body() createServerDto: CreateServerDto,
+        @Req() req: Request,
+    ) {
+        const serverCreated = await this.serversService.createServer({
+            ...createServerDto,
+            userId: req.user.id,
+        });
         return {
-            message: 'Server created successfully',
-            server: {
-                id: 'server_id',
-                name: 'server_name',
-                description: 'server_description',
-                icon_url: 'server_icon_url',
-            },
+            message: 'CREATE_SERVER_SUCCESSFULLY',
+            data: serverCreated,
         };
     }
 
-    @Post('join')
-    async joinServer() {}
+    @Post(':id/join')
+    async joinServer(
+        @Body() joinServerDto: JoinServerDto,
+        @Param('id') serverId: string,
+        @Req() req: Request,
+    ) {
+        await this.serversService.joinServer({
+            ...joinServerDto,
+            userId: req.user.id,
+            serverId,
+        });
+        return {
+            message: 'JOIN_SERVER_SUCCESSFULLY',
+        };
+    }
 
+    @Get('joined')
+    async listServers(@Req() req: Request) {
+        const userId = req.user.id;
+        return this.serversService.findMany({
+            where: { members: { some: { userId } } },
+        });
+    }
+
+    @Delete(':id')
+    async deleteServer(@Param('id') serverId: string) {
+        console.log(serverId);
+
+        await this.serversService.delete({
+            where: {
+                id: serverId,
+            },
+        });
+        return {
+            message: 'DELETE_SERVER_SUCCESSFULLY',
+        };
+    }
+
+    @Post('leave')
     async leaveServer() {}
 
+    @Get('/')
     async findServers() {}
 
+    @Get(':id')
     async findServer() {}
-
-    async findServiceOwners() {}
 }

@@ -18,3 +18,7 @@ export const formatStringArrayToObjectWithTrueValue = (arr: string[]) => {
     }
     return result;
 };
+
+export const objectHasKey = (obj: Record<string, unknown>, key: string) => {
+    return key in obj;
+};

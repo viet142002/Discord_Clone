@@ -78,6 +78,7 @@ model Role {
     id                 String                  @id @default(uuid())
     name               String
     serverId           String
+    isOwner   Boolean  @default(false)
     server             Server                  @relation(fields: [serverId], references: [id], onDelete: Cascade)
     users              UserRole[]
     channelPermissions ChannelRolePermission[]

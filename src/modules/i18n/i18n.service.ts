@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 
 import * as vi from './lang/vi.json';
 import * as en from './lang/en.json';
+import { RequestContext } from 'src/middlewares/requestContext.middleware';
 
-type Lang = 'en' | 'vi';
+export type Lang = 'en' | 'vi';
 
 @Injectable()
 export class I18nService {
@@ -12,7 +13,8 @@ export class I18nService {
         vi,
     };
 
-    translate(key: string, lang: Lang = 'en'): string {
+    translate(key: string): string {
+        const lang = RequestContext.current?.lang || 'en';
         return this.translation[lang][key] || key;
     }
 }

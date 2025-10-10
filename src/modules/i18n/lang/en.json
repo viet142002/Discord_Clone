@@ -13,5 +13,6 @@
     "USER_REGISTER_SUCCESS": "Register success",
     "VALIDATION_REQUIRED_DEVICE_INFO": "Device info is required",
     "CANT_ACCESS_RESOURCE": "Can't access resource",
-    "TOKEN_NOT_VALID": "Token is not valid"
+    "TOKEN_NOT_VALID": "Token is not valid",
+    "USER_LOGIN_SUCCESS": "Login success"
 }

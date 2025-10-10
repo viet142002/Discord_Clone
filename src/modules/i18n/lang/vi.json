@@ -13,5 +13,6 @@
     "USER_REGISTER_SUCCESS": "Đăng ký thành công",
     "VALIDATION_REQUIRED_DEVICE_INFO": "Thông tin thiết bị không được bỏ trống",
     "CANT_ACCESS_RESOURCE": "Không thể truy cập tài nguyên này",
-    "TOKEN_NOT_VALID": "Token không hợp lệ"
+    "TOKEN_NOT_VALID": "Token không hợp lệ",
+    "USER_LOGIN_SUCCESS": "Đăng nhập thành công"
 }

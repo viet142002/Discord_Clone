@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import {
     formatStringArrayToObjectWithTrueValue,
     formatUnknownToValidStringArray,
@@ -75,6 +75,11 @@ type ModelMethods<Entity, TModel extends PrismaModel> = {
 
 type IInclude = string[];
 
+export type TransactionClient = Omit<
+    PrismaClient<Prisma.PrismaClientOptions>,
+    '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'
+>;
+
 @Injectable()
 export abstract class BaseService<TModel extends PrismaModel, Entity> {
     protected readonly modelName: TModel;
@@ -90,63 +95,82 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
         >;
     }
 
+    getClient(ts?: TransactionClient): ModelMethods<Entity, TModel> {
+        if (!ts) return this.model;
+        return ts[this.modelName] as unknown as ModelMethods<Entity, TModel>;
+    }
+
     async create(
         args: Prisma.Args<PrismaService[TModel], 'create'>,
+        tx?: TransactionClient,
     ): Promise<Entity> {
-        return this.model.create(args);
+        return this.getClient(tx).create(args);
     }
 
     async findUnique(
         args: Prisma.Args<PrismaService[TModel], 'findUnique'>,
+        tx?: TransactionClient,
     ): Promise<Entity | null> {
-        return this.model.findUnique(args);
+        return this.getClient(tx).findUnique(args);
     }
 
     async findUniqueOrThrow(
         args: Prisma.Args<PrismaService[TModel], 'findUniqueOrThrow'>,
+        tx?: TransactionClient,
     ): Promise<Entity | null> {
-        return this.model.findUniqueOrThrow(args);
+        return this.getClient(tx).findUniqueOrThrow(args);
     }
 
     async update(
         args: Prisma.Args<PrismaService[TModel], 'update'>,
+        tx?: TransactionClient,
     ): Promise<Entity> {
-        return this.model.update(args);
+        return this.getClient(tx).update(args);
     }
 
     async delete(
         args: Prisma.Args<PrismaService[TModel], 'delete'>,
+        tx?: TransactionClient,
     ): Promise<Entity> {
-        return this.model.delete(args);
+        return this.getClient(tx).delete(args);
     }
 
-    async findMany(options: {
-        filter?: { search: string };
-        searchFields?: (keyof TModel)[];
-        pagination: PaginationDto;
-        sort?: SortDto;
-        include?: IInclude;
-        where?: Prisma.Args<PrismaService[TModel], 'findMany'>['where'];
-        omit?: Prisma.Args<PrismaService[TModel], 'findMany'>['omit'];
-    }): Promise<PaginatedResponseDto<Entity>>;
-    async findMany(options?: {
-        filter?: { search: string };
-        searchFields?: (keyof TModel)[];
-        pagination?: PaginationDto;
-        sort?: SortDto;
-        include?: IInclude;
-        where?: Prisma.Args<PrismaService[TModel], 'findMany'>['where'];
-        omit?: Prisma.Args<PrismaService[TModel], 'findMany'>['omit'];
-    }): Promise<Entity[]>;
-    async findMany(options: {
-        filter?: { search: string };
-        searchFields?: (keyof TModel)[];
-        pagination?: PaginationDto;
-        sort?: SortDto;
-        include?: IInclude;
-        where?: Prisma.Args<PrismaService[TModel], 'findMany'>['where'];
-        omit?: Prisma.Args<PrismaService[TModel], 'findMany'>['omit'];
-    }): Promise<PaginatedResponseDto<Entity> | Entity[]> {
+    async findMany(
+        options: {
+            filter?: { search: string };
+            searchFields?: (keyof TModel)[];
+            pagination: PaginationDto;
+            sort?: SortDto;
+            include?: IInclude;
+            where?: Prisma.Args<PrismaService[TModel], 'findMany'>['where'];
+            omit?: Prisma.Args<PrismaService[TModel], 'findMany'>['omit'];
+        },
+        tx?: TransactionClient,
+    ): Promise<PaginatedResponseDto<Entity>>;
+    async findMany(
+        options?: {
+            filter?: { search: string };
+            searchFields?: (keyof TModel)[];
+            pagination?: PaginationDto;
+            sort?: SortDto;
+            include?: IInclude;
+            where?: Prisma.Args<PrismaService[TModel], 'findMany'>['where'];
+            omit?: Prisma.Args<PrismaService[TModel], 'findMany'>['omit'];
+        },
+        tx?: TransactionClient,
+    ): Promise<Entity[]>;
+    async findMany(
+        options: {
+            filter?: { search: string };
+            searchFields?: (keyof TModel)[];
+            pagination?: PaginationDto;
+            sort?: SortDto;
+            include?: IInclude;
+            where?: Prisma.Args<PrismaService[TModel], 'findMany'>['where'];
+            omit?: Prisma.Args<PrismaService[TModel], 'findMany'>['omit'];
+        },
+        tx?: TransactionClient,
+    ): Promise<PaginatedResponseDto<Entity> | Entity[]> {
         const {
             filter,
             searchFields = ['title', 'description', 'content'],
@@ -175,9 +199,13 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
         const finalWhere: Prisma.Args<
             PrismaService[TModel],
             'findMany'
-        >['where'] = {
-            AND: [{ ...options.where }, searchCondition],
-        } as Prisma.Args<PrismaService[TModel], 'findMany'>['where'];
+        >['where'] = (
+            searchCondition
+                ? {
+                      AND: [{ ...options.where }, searchCondition],
+                  }
+                : options.where
+        ) as Prisma.Args<PrismaService[TModel], 'findMany'>['where'];
 
         const findManyArgsExceptPagination: Omit<
             FindManyArgs<TModel>,
@@ -189,6 +217,8 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
             include: includeObj,
         };
 
+        const client = this.getClient(tx);
+
         if (!pagination) {
             return this.model.findMany(findManyArgsExceptPagination);
         }
@@ -196,11 +226,13 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
         const { page = 1, limit = 10 } = pagination;
         const skip = (page - 1) * limit;
 
+        console.log();
+
         const [total, data] = await Promise.all([
-            this.model.count({
+            client.count({
                 where: finalWhere,
             }),
-            this.model.findMany({
+            client.findMany({
                 ...findManyArgsExceptPagination,
                 skip,
                 take: limit,

@@ -6,6 +6,4 @@ export class CreateServerDto {
 
     @IsNotEmpty({ message: 'VALIDATION_REQUIRED_SERVER_DESCRIPTION' })
     description: string;
-
-    icon_url: string;
 }

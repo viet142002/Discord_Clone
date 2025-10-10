@@ -48,9 +48,7 @@ export class AuthController {
         });
 
         return {
-            data: {
-                user: dataLogin.user,
-            },
+            data: dataLogin.user,
             message: this.i18nService.translate('USER_LOGIN_SUCCESS'),
         };
     }
@@ -99,7 +97,23 @@ export class AuthController {
 
     @Public()
     @Post('refresh')
-    refresh() {
-        return 'refresh';
+    async refresh(
+        @Req() req: Request,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const refreshToken = req.cookies[KEY_STORES.REFRESH_TOKEN] as string;
+        if (!refreshToken) {
+            throw new BadRequestException('REFRESH_TOKEN_NOT_FOUND');
+        }
+        const accessToken = await this.authService.refreshToken(refreshToken);
+        res.cookie(KEY_STORES.ACCESS_TOKEN, 'Bearer ' + accessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            path: '/',
+        });
+        return {
+            message: this.i18nService.translate('REFRESH_TOKEN_SUCCESS'),
+        };
     }
 }

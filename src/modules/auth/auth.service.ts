@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Platform, Prisma, User } from '@prisma/client';
 import { comparePassword } from 'src/common/helpers/bcrypt.helper';
 import { LoginDto } from 'src/modules/auth/dto/login.dto';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { SessionService } from 'src/modules/sessions/session.service';
 import { UsersService } from 'src/modules/users/users.service';
 
@@ -16,6 +17,7 @@ interface PayloadToken {
 export class AuthService {
     private refreshExpiredIn: number;
     constructor(
+        private prisma: PrismaService,
         private usersService: UsersService,
         private jwtService: JwtService,
         private configService: ConfigService,
@@ -38,7 +40,9 @@ export class AuthService {
         password: string,
     ): Promise<Omit<User, 'password'>> {
         const user = await this.usersService.findUnique({
-            where: { id: loginId },
+            where: {
+                email: loginId,
+            },
         });
         if (!user) {
             throw new UnauthorizedException('USER_NOT_FOUND');
@@ -67,28 +71,41 @@ export class AuthService {
         refreshToken: string;
     }> {
         const userLogin = await this.validateUser(user.loginId, user.password);
-        const exitsSession = await this.sessionService.findUnique({
-            where: {
-                userId_platform: {
-                    userId: userLogin.id,
-                    platform,
+        const session = await this.prisma.$transaction(async (tx) => {
+            const existing = await this.sessionService.findUnique(
+                {
+                    where: {
+                        userId_platform: {
+                            userId: userLogin.id,
+                            platform,
+                        },
+                    },
                 },
-            },
-        });
-
-        if (exitsSession) {
-            await this.sessionService.delete({
-                where: {
-                    id: exitsSession.id,
+                tx,
+            );
+            if (existing) {
+                await this.sessionService.delete(
+                    {
+                        where: {
+                            userId_platform: {
+                                userId: userLogin.id,
+                                platform,
+                            },
+                        },
+                    },
+                    tx,
+                );
+            }
+            return this.sessionService.create(
+                {
+                    data: {
+                        userId: userLogin.id,
+                        platform,
+                        device: user.device,
+                    },
                 },
-            });
-        }
-        const session = await this.sessionService.create({
-            data: {
-                userId: userLogin.id,
-                device: user.device,
-                platform,
-            },
+                tx,
+            );
         });
         const payload: PayloadToken = {
             sessionId: session.id,
@@ -109,6 +126,23 @@ export class AuthService {
         });
     }
 
+    async refreshToken(refreshToken: string): Promise<string> {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { iat, exp, ...payload } = await this.verifyToken(
+            refreshToken,
+            'refresh',
+        );
+        const session = await this.sessionService.findUnique({
+            where: {
+                id: payload.sessionId,
+            },
+        });
+        if (!session) {
+            throw new UnauthorizedException();
+        }
+        return this.jwtService.sign(payload);
+    }
+
     generateTokens(payload: PayloadToken): {
         accessToken: string;
         refreshToken: string;
@@ -127,7 +161,7 @@ export class AuthService {
     async verifyToken(
         token: string,
         type: 'access' | 'refresh',
-    ): Promise<PayloadToken> {
+    ): Promise<PayloadToken & { iat: number; exp: number }> {
         try {
             if (type === 'refresh') {
                 return this.jwtService.verify(token, {

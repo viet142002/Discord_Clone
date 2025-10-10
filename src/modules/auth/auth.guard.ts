@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import {
     CanActivate,
     ExecutionContext,
+    ForbiddenException,
     Injectable,
     UnauthorizedException,
 } from '@nestjs/common';
@@ -31,10 +32,16 @@ export class AuthGuard implements CanActivate {
         }
 
         const req: Request = context.switchToHttp().getRequest();
+        console.log('=============== req', req.cookies);
+
         const token = this.extractToken(req);
 
+        console.log('=============== token', token);
+
         if (!token) {
-            throw new UnauthorizedException('CANT_ACCESS_RESOURCE');
+            console.log('=============== token', token);
+
+            throw new ForbiddenException('CANT_ACCESS_RESOURCE');
         }
 
         const payload = await this.authService.verifyToken(token, 'access');
