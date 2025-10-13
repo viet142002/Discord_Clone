@@ -27,14 +27,16 @@ model User {
     members   Member[]
     sessions  Session[]
     roles     UserRole[]
+    messages  Message[]
+    mentions  Mention[]
 }
 
 model Session {
-    id         String   @id @default(uuid())
-    device     String
-    platform   Platform
-    userId     String
-    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id       String   @id @default(uuid())
+    device   String
+    platform Platform
+    userId   String
+    user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([userId, platform])
 }
@@ -72,20 +74,21 @@ model Channel {
     serverId           String
     server             Server                  @relation(fields: [serverId], references: [id], onDelete: Cascade)
     channelPermissions ChannelRolePermission[]
+    messages           Message[]
 }
 
 model Role {
     id                 String                  @id @default(uuid())
     name               String
     serverId           String
-    isOwner   Boolean  @default(false)
+    isOwner            Boolean                 @default(false)
     server             Server                  @relation(fields: [serverId], references: [id], onDelete: Cascade)
     users              UserRole[]
     channelPermissions ChannelRolePermission[]
 }
 
 model UserRole {
-    id     String  @id @default(uuid())
+    id     String @id @default(uuid())
     role   Role   @relation(fields: [roleId], references: [id])
     roleId String
     user   User   @relation(fields: [userId], references: [id])
@@ -105,4 +108,32 @@ model ChannelRolePermission {
     canManage Boolean  @default(false)
 
     @@unique([roleId, channelId])
+}
+
+model Message {
+    id        String    @id @default(uuid())
+    content   String
+    mentions  Mention[]
+    sender    User      @relation(fields: [senderId], references: [id])
+    senderId  String
+    replyToId String?   @unique
+    replyTo   Message?  @relation("MessageReply", fields: [replyToId], references: [id])
+    reply     Message?  @relation("MessageReply")
+    channel   Channel   @relation(fields: [channelId], references: [id])
+    channelId String
+    createdAt DateTime  @default(now())
+}
+
+model Mention {
+    id        String      @id @default(uuid())
+    message   Message     @relation(fields: [messageId], references: [id])
+    messageId String
+    user      User?       @relation(fields: [userId], references: [id])
+    userId    String?
+    type      MentionType
+}
+
+enum MentionType {
+    ALL
+    USER
 }
