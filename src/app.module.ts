@@ -17,6 +17,7 @@ import { RedisModule } from 'src/modules/redis/redis.module';
 import { RoleModule } from 'src/modules/roles/role.module';
 import { ServersModule } from 'src/modules/servers/servers.module';
 import { SessionModule } from 'src/modules/sessions/session.module';
+import { UserRoleModule } from 'src/modules/userRoles/userRole.module';
 import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
@@ -31,6 +32,7 @@ import { UsersModule } from 'src/modules/users/users.module';
         SessionModule,
         RedisModule,
         PrismaModule,
+        UserRoleModule,
         ConfigModule.forRoot({
             isGlobal: true,
             load: [configuration],

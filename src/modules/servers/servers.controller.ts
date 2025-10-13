@@ -10,12 +10,19 @@ import {
 import type { Request } from 'express';
 
 import { CreateServerDto } from 'src/modules/servers/dto/createServer.dto';
-import { JoinServerDto } from 'src/modules/servers/dto/joinServer.dto';
 import { ServersService } from 'src/modules/servers/servers.service';
 
 @Controller('servers')
 export class ServersController {
     constructor(private serversService: ServersService) {}
+
+    @Get('joined')
+    async listServers(@Req() req: Request) {
+        const userId = req.user.id;
+        return this.serversService.findMany({
+            where: { members: { some: { userId } } },
+        });
+    }
 
     @Post('create')
     async createServer(
@@ -30,30 +37,6 @@ export class ServersController {
             message: 'CREATE_SERVER_SUCCESSFULLY',
             data: serverCreated,
         };
-    }
-
-    @Post(':id/join')
-    async joinServer(
-        @Body() joinServerDto: JoinServerDto,
-        @Param('id') serverId: string,
-        @Req() req: Request,
-    ) {
-        await this.serversService.joinServer({
-            ...joinServerDto,
-            userId: req.user.id,
-            serverId,
-        });
-        return {
-            message: 'JOIN_SERVER_SUCCESSFULLY',
-        };
-    }
-
-    @Get('joined')
-    async listServers(@Req() req: Request) {
-        const userId = req.user.id;
-        return this.serversService.findMany({
-            where: { members: { some: { userId } } },
-        });
     }
 
     @Delete(':id')

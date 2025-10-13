@@ -1,30 +1,26 @@
 import { Prisma } from '@prisma/client';
 
 import { UserRoleEntity } from './userRole.entity';
-import { ChannelEntity } from 'src/modules/channels/entity/channel.entity';
-import { MemberEntity } from 'src/modules/members/entity/member.entity';
 import { RoleEntity } from 'src/modules/roles/entity/role.entity';
+import { UserEntity } from 'src/modules/users/entity/user.entity';
 
-type ServerOptionalRelations = Partial<
-    Prisma.ServerGetPayload<{
+type UserRoleOptionalRelations = Partial<
+    Prisma.UserRoleGetPayload<{
         include: {
-            channels: true;
-            members: true;
-            roles: true;
+            role: true;
+            user: { omit: { password: true } };
         };
         select: {
-            channels: true;
-            members: true;
-            roles: true;
+            role: true;
+            user: true;
         };
     }>
 >;
 
-export class ServerWithRelationsEntity
+export class UserRoleWithRelationsEntity
     extends UserRoleEntity
-    implements ServerOptionalRelations
+    implements UserRoleOptionalRelations
 {
-    channels?: ChannelEntity[];
-    members?: MemberEntity[];
-    roles?: RoleEntity[];
+    role?: RoleEntity;
+    user?: UserEntity;
 }

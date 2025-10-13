@@ -1,17 +1,21 @@
-export const formatUnknownToValidStringArray = (arr: unknown[]) => {
+export const formatUnknownToValidStringArray = (
+    arr: string[] | string,
+): string[] => {
     const result: string[] = [];
-    for (let i = 0; i < arr.length; i++) {
-        if (
-            (typeof arr[i] === 'string' || typeof arr[i] === 'number') &&
-            arr[i]
-        ) {
-            result.push(String(arr[i]));
+    if (typeof arr === 'string') {
+        const convertStringToArray = arr.split(',');
+        return formatUnknownToValidStringArray(convertStringToArray);
+    } else {
+        for (let i = 0; i < arr.length; i++) {
+            result.push(arr[i]);
         }
     }
     return result;
 };
 
-export const formatStringArrayToObjectWithTrueValue = (arr: string[]) => {
+export const formatStringArrayToObjectWithTrueValue = (
+    arr: string[],
+): Record<string, any> => {
     const result: Record<string, boolean> = {};
     for (let i = 0; i < arr.length; i++) {
         result[arr[i]] = true;

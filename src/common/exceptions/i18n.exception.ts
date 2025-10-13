@@ -4,7 +4,7 @@ import {
     ArgumentsHost,
     HttpException,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { I18nService } from 'src/modules/i18n/i18n.service';
 
 interface IResponse {
@@ -29,6 +29,7 @@ export class I18nBadRequestFilter implements ExceptionFilter {
             return;
         }
 
+        console.log(exception.message);
         this.unknownException(response);
     }
 

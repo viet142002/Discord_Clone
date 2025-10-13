@@ -32,15 +32,10 @@ export class AuthGuard implements CanActivate {
         }
 
         const req: Request = context.switchToHttp().getRequest();
-        console.log('=============== req', req.cookies);
 
         const token = this.extractToken(req);
 
-        console.log('=============== token', token);
-
         if (!token) {
-            console.log('=============== token', token);
-
             throw new ForbiddenException('CANT_ACCESS_RESOURCE');
         }
 

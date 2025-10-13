@@ -73,7 +73,7 @@ type ModelMethods<Entity, TModel extends PrismaModel> = {
     }) => Promise<number>;
 };
 
-type IInclude = string[];
+type IInclude = string[] | string;
 
 export type TransactionClient = Omit<
     PrismaClient<Prisma.PrismaClientOptions>,
@@ -84,6 +84,7 @@ export type TransactionClient = Omit<
 export abstract class BaseService<TModel extends PrismaModel, Entity> {
     protected readonly modelName: TModel;
     protected readonly model: ModelMethods<Entity, TModel>;
+    protected includeMap: Record<string, any> = {};
     constructor(
         protected readonly prisma: PrismaService,
         modelName: TModel,
@@ -183,6 +184,13 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
         const includeArr = formatUnknownToValidStringArray(include ?? []);
         const includeObj = formatStringArrayToObjectWithTrueValue(includeArr);
 
+        for (const key of Object.keys(includeObj)) {
+            if (this.includeMap[key]) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                includeObj[key] = this.includeMap[key];
+            }
+        }
+
         const orderBy = (sort?.sortBy && {
             [sort.sortBy]: sort.sortDirection,
         }) as Prisma.Args<PrismaService[TModel], 'findMany'>['orderBy'];
@@ -225,8 +233,6 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
 
         const { page = 1, limit = 10 } = pagination;
         const skip = (page - 1) * limit;
-
-        console.log();
 
         const [total, data] = await Promise.all([
             client.count({
