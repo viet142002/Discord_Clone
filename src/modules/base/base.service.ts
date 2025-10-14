@@ -84,7 +84,10 @@ export type TransactionClient = Omit<
 export abstract class BaseService<TModel extends PrismaModel, Entity> {
     protected readonly modelName: TModel;
     protected readonly model: ModelMethods<Entity, TModel>;
-    protected includeMap: Record<string, any> = {};
+    protected includeMap: Prisma.Args<
+        PrismaService[TModel],
+        'findMany'
+    >['include'] = {};
     constructor(
         protected readonly prisma: PrismaService,
         modelName: TModel,
@@ -138,8 +141,9 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
 
     async findMany(
         options: {
+            select?: Prisma.Args<PrismaService[TModel], 'findMany'>['select'];
             filter?: { search: string };
-            searchFields?: (keyof TModel)[];
+            searchFields?: (keyof Entity)[];
             pagination: PaginationDto;
             sort?: SortDto;
             include?: IInclude;
@@ -150,8 +154,9 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
     ): Promise<PaginatedResponseDto<Entity>>;
     async findMany(
         options?: {
+            select?: Prisma.Args<PrismaService[TModel], 'findMany'>['select'];
             filter?: { search: string };
-            searchFields?: (keyof TModel)[];
+            searchFields?: (keyof Entity)[];
             pagination?: PaginationDto;
             sort?: SortDto;
             include?: IInclude;
@@ -162,8 +167,9 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
     ): Promise<Entity[]>;
     async findMany(
         options: {
+            select?: Prisma.Args<PrismaService[TModel], 'findMany'>['select'];
             filter?: { search: string };
-            searchFields?: (keyof TModel)[];
+            searchFields?: (keyof Entity)[];
             pagination?: PaginationDto;
             sort?: SortDto;
             include?: IInclude;
@@ -173,6 +179,7 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
         tx?: TransactionClient,
     ): Promise<PaginatedResponseDto<Entity> | Entity[]> {
         const {
+            select,
             filter,
             searchFields = ['title', 'description', 'content'],
             pagination = { page: 1, limit: 10 },
@@ -185,7 +192,7 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
         const includeObj = formatStringArrayToObjectWithTrueValue(includeArr);
 
         for (const key of Object.keys(includeObj)) {
-            if (this.includeMap[key]) {
+            if (this.includeMap && this.includeMap[key]) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 includeObj[key] = this.includeMap[key];
             }
@@ -223,6 +230,7 @@ export abstract class BaseService<TModel extends PrismaModel, Entity> {
             orderBy,
             omit,
             include: includeObj,
+            select,
         };
 
         const client = this.getClient(tx);

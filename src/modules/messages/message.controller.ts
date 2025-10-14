@@ -1,0 +1,52 @@
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Post,
+    Query,
+    Req,
+} from '@nestjs/common';
+import type { Request } from 'express';
+import { QueriesMessageInChannelDto } from 'src/modules/messages/dto/queriesMessageInChannel.dto';
+import { SendMessageDto } from 'src/modules/messages/dto/sendMessage.dto';
+import { MessageService } from 'src/modules/messages/message.service';
+
+@Controller('messages')
+export class MessageController {
+    constructor(private messageService: MessageService) {}
+
+    @Get(':channelId')
+    async getMessagesByChannelId(
+        @Param('channelId') channelId: string,
+        @Query() queries: QueriesMessageInChannelDto,
+    ) {
+        return this.messageService.getMessagesByChannelId(channelId, {
+            page: queries.page || 1,
+            limit: queries.limit || 10,
+            search: queries.search,
+        });
+    }
+
+    @Post()
+    async sendMessage(@Req() req: Request, @Body() messageDto: SendMessageDto) {
+        const userId = req.user.id;
+        await this.messageService.sendMessage(userId, messageDto);
+        return {
+            message: 'SEND_MESSAGE_SUCCESSFULLY',
+        };
+    }
+
+    @Delete(':id')
+    async deleteMessage(@Param('id') messageId: string) {
+        await this.messageService.delete({
+            where: {
+                id: messageId,
+            },
+        });
+        return {
+            message: 'DELETE_MESSAGE_SUCCESSFULLY',
+        };
+    }
+}

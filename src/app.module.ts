@@ -12,6 +12,7 @@ import { AuthModule } from 'src/modules/auth/auth.module';
 import { ChannelModule } from 'src/modules/channels/channel.module';
 import { I18nModule } from 'src/modules/i18n/i18n.module';
 import { MemberModule } from 'src/modules/members/member.module';
+import { MessageModule } from 'src/modules/messages/message.module';
 import { PrismaModule } from 'src/modules/prisma/prisma.module';
 import { RedisModule } from 'src/modules/redis/redis.module';
 import { RoleModule } from 'src/modules/roles/role.module';
@@ -33,6 +34,8 @@ import { UsersModule } from 'src/modules/users/users.module';
         RedisModule,
         PrismaModule,
         UserRoleModule,
+        MessageModule,
+        ChannelModule,
         ConfigModule.forRoot({
             isGlobal: true,
             load: [configuration],
