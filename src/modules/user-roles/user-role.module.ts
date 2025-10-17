@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { UserRoleService } from 'src/modules/userRoles/userRole.service';
+import { UserRoleService } from 'src/modules/user-roles/user-role.service';
 
 @Module({
     providers: [UserRoleService],

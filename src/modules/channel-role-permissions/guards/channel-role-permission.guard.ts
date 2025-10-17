@@ -6,9 +6,9 @@ import {
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 
-import { ChannelRolePermissionsService } from 'src/modules/channelRolePermissions/channelRolePermissions.service';
-import { PERMISSION_CHANNEL_KEY } from 'src/modules/channelRolePermissions/decorators/channel-permission.decorator';
-import { PermissionFlags } from 'src/modules/channelRolePermissions/guards/permissions.enum';
+import { ChannelRolePermissionsService } from 'src/modules/channel-role-permissions/channel-role-permissions.service';
+import { PERMISSION_CHANNEL_KEY } from 'src/modules/channel-role-permissions/decorators/channel-permission.decorator';
+import { PermissionFlags } from 'src/modules/channel-role-permissions/guards/permissions.enum';
 
 export class ChannelPermissionGuard implements CanActivate {
     constructor(

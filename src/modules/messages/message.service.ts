@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BaseService } from 'src/modules/base/base.service';
-import { MessageWithRelationsEntity } from './entity/messageWithRelation.entity';
+import { MessageWithRelationsEntity } from './entity/message-with-relation.entity';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { QueriesMessageInChannelDto } from 'src/modules/messages/dto/queriesMessageInChannel.dto';
 import { SendMessageDto } from 'src/modules/messages/dto/sendMessage.dto';

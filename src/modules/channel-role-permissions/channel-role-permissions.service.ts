@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseService } from 'src/modules/base/base.service';
-import { ChannelRolePermissionWithRelationsEntity } from 'src/modules/channelRolePermissions/entity/channelRolePermissionWithRelations.entity';
-import { PermissionFlags } from 'src/modules/channelRolePermissions/guards/permissions.enum';
+import { ChannelRolePermissionWithRelationsEntity } from 'src/modules/channel-role-permissions/entity/channel-role-permission-with-relations.entity';
+import { PermissionFlags } from 'src/modules/channel-role-permissions/guards/permissions.enum';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @Injectable()

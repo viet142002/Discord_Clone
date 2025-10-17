@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
 import { BaseService } from 'src/modules/base/base.service';
-import { ServerWithRelationsEntity } from 'src/modules/servers/entity/serverWithRelations.entity';
+import { ServerWithRelationsEntity } from 'src/modules/servers/entity/server-with-relations.entity';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
-import { CreateServerDto } from 'src/modules/servers/dto/createServer.dto';
+import { CreateServerDto } from 'src/modules/servers/dto/create-server.dto';
 import { RoleService } from 'src/modules/roles/role.service';
 import { ChannelService } from 'src/modules/channels/channel.service';
 

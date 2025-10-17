@@ -17,7 +17,7 @@ import { RedisModule } from 'src/modules/redis/redis.module';
 import { RoleModule } from 'src/modules/roles/role.module';
 import { ServersModule } from 'src/modules/servers/servers.module';
 import { SessionModule } from 'src/modules/sessions/session.module';
-import { UserRoleModule } from 'src/modules/userRoles/userRole.module';
+import { UserRoleModule } from 'src/modules/user-roles/user-role.module';
 import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({

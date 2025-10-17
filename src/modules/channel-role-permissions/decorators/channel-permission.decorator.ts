@@ -1,6 +1,6 @@
 import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
-import { ChannelPermissionGuard } from 'src/modules/channelRolePermissions/guards/channelRolePermission.guard';
-import { PermissionFlags } from 'src/modules/channelRolePermissions/guards/permissions.enum';
+import { ChannelPermissionGuard } from 'src/modules/channel-role-permissions/guards/channel-role-permission.guard';
+import { PermissionFlags } from 'src/modules/channel-role-permissions/guards/permissions.enum';
 
 export const PERMISSION_CHANNEL_KEY = 'PERMISSION_CHANNEL_KEY';
 

@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-import { ChannelRolePermissionEntity } from './channelRolePermission.entity';
+import { ChannelRolePermissionEntity } from './channel-role-permission.entity';
 import { ChannelEntity } from 'src/modules/channels/entity/channel.entity';
 
 type ChannelRolePermissionOptionalRelations = Partial<

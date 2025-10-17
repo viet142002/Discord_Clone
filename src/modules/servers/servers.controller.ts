@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 
-import { CreateServerDto } from 'src/modules/servers/dto/createServer.dto';
+import { CreateServerDto } from 'src/modules/servers/dto/create-server.dto';
 import { ServersService } from 'src/modules/servers/servers.service';
 
 @Controller()

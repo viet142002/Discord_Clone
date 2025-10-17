@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MemberController } from 'src/modules/members/member.controller';
 import { MemberService } from 'src/modules/members/member.service';
-import { UserRoleModule } from 'src/modules/userRoles/userRole.module';
+import { UserRoleModule } from 'src/modules/user-roles/user-role.module';
 
 @Module({
     imports: [UserRoleModule],

@@ -4,7 +4,7 @@ import { Prisma, User } from '@prisma/client';
 import { hashPassword } from 'src/common/helpers/bcrypt.helper';
 import { BaseService } from 'src/modules/base/base.service';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
-import { UserWithRelationsEntity } from 'src/modules/users/entity/userWithRelations.entity';
+import { UserWithRelationsEntity } from 'src/modules/users/entity/user-with-relations.entity';
 
 @Injectable()
 export class UsersService extends BaseService<'user', UserWithRelationsEntity> {

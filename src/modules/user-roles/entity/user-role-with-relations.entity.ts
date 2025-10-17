@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-import { UserRoleEntity } from './userRole.entity';
+import { UserRoleEntity } from './user-role.entity';
 import { RoleEntity } from 'src/modules/roles/entity/role.entity';
 import { UserEntity } from 'src/modules/users/entity/user.entity';
 

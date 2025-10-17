@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { BaseService } from 'src/modules/base/base.service';
 import { JoinDto } from 'src/modules/members/dto/join.dto';
-import { MemberWithRelationsEntity } from 'src/modules/members/entity/memberWithRelations.entity';
+import { MemberWithRelationsEntity } from 'src/modules/members/entity/member-with-relations.entity';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
-import { UserRoleService } from 'src/modules/userRoles/userRole.service';
+import { UserRoleService } from 'src/modules/user-roles/user-role.service';
 
 @Injectable()
 export class MemberService extends BaseService<

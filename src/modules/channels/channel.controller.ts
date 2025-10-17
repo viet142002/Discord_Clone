@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, Param, Req } from '@nestjs/common';
 import type { Request } from 'express';
-import { ChannelPermission } from 'src/modules/channelRolePermissions/decorators/channel-permission.decorator';
-import { PermissionFlags } from 'src/modules/channelRolePermissions/guards/permissions.enum';
+import { ChannelPermission } from 'src/modules/channel-role-permissions/decorators/channel-permission.decorator';
+import { PermissionFlags } from 'src/modules/channel-role-permissions/guards/permissions.enum';
 import { ChannelService } from 'src/modules/channels/channel.service';
 
 @Controller()
