@@ -1,10 +1,9 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
+import { RouterModule } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import configuration from 'src/configs/configuration';
-import { typeOrmConfig } from 'src/configs/typeorm.config';
 import { DeviceMiddleware } from 'src/middlewares/device.middleware';
 import { LangMiddleware } from 'src/middlewares/lang.middleware';
 import { RequestContextMiddleware } from 'src/middlewares/requestContext.middleware';
@@ -36,14 +35,27 @@ import { UsersModule } from 'src/modules/users/users.module';
         UserRoleModule,
         MessageModule,
         ChannelModule,
+        RouterModule.register([
+            {
+                path: '/servers',
+                module: ServersModule,
+                children: [
+                    {
+                        path: ':serverId/channels',
+                        module: ChannelModule,
+                        children: [
+                            {
+                                path: ':channelId/messages',
+                                module: MessageModule,
+                            },
+                        ],
+                    },
+                ],
+            },
+        ]),
         ConfigModule.forRoot({
             isGlobal: true,
             load: [configuration],
-        }),
-        TypeOrmModule.forRootAsync({
-            imports: [ConfigModule],
-            useFactory: typeOrmConfig,
-            inject: [ConfigService],
         }),
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, '..', 'src', 'public'),

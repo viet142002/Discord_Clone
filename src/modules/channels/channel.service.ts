@@ -11,4 +11,62 @@ export class ChannelService extends BaseService<
     constructor(prisma: PrismaService) {
         super(prisma, 'channel');
     }
+
+    async getListChannelAccessAble(serverId: string, userId: string) {
+        return this.model.findMany({
+            where: {
+                serverId: serverId,
+                OR: [
+                    {
+                        isPrivate: false,
+                    },
+                    {
+                        isPrivate: true,
+                        channelPermissions: {
+                            some: {
+                                canView: true,
+                                role: {
+                                    OR: [
+                                        {
+                                            isOwner: true,
+                                        },
+                                        {
+                                            isOwner: false,
+                                            users: {
+                                                some: {
+                                                    userId: userId,
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+            include: {
+                channelPermissions: {
+                    omit: {
+                        roleId: true,
+                        channelId: true,
+                    },
+                    include: {
+                        role: {
+                            omit: {
+                                serverId: true,
+                            },
+                            include: {
+                                users: true,
+                            },
+                        },
+                    },
+                },
+            },
+            omit: {
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+    }
 }

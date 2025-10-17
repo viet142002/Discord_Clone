@@ -42,7 +42,9 @@ export class MessageService extends BaseService<
         queries: QueriesMessageInChannelDto,
     ) {
         return this.findMany({
-            where: { channelId },
+            where: {
+                channelId: channelId,
+            },
             searchFields: ['content'],
             filter: queries.search
                 ? {
@@ -51,8 +53,8 @@ export class MessageService extends BaseService<
                 : undefined,
             include: ['mentions', 'replyTo', 'sender'],
             pagination: {
-                page: queries.page || 1,
-                limit: queries.limit || 10,
+                page: Number(queries.page) || 1,
+                limit: Number(queries.limit) || 10,
             },
             omit: {
                 senderId: true,
@@ -63,7 +65,11 @@ export class MessageService extends BaseService<
         });
     }
 
-    async sendMessage(userId: string, messageDto: SendMessageDto) {
+    async sendMessage(
+        userId: string,
+        channelId: string,
+        messageDto: SendMessageDto,
+    ) {
         const mentions:
             | Prisma.MentionUncheckedCreateNestedManyWithoutMessageInput
             | undefined =
@@ -80,7 +86,7 @@ export class MessageService extends BaseService<
         return this.create({
             data: {
                 content: messageDto.content,
-                channelId: messageDto.channelId,
+                channelId: channelId,
                 replyToId: messageDto.replyToId,
                 senderId: userId,
                 mentions,

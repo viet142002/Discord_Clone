@@ -18,7 +18,7 @@ enum ChannelType {
 }
 
 model User {
-    id        String     @id @default(uuid())
+    id        String     @id @default(cuid())
     createdAt DateTime   @default(now())
     updatedAt DateTime   @updatedAt
     email     String     @unique
@@ -32,7 +32,7 @@ model User {
 }
 
 model Session {
-    id       String   @id @default(uuid())
+    id       String   @id @default(cuid())
     device   String
     platform Platform
     userId   String
@@ -42,19 +42,19 @@ model Session {
 }
 
 model Server {
-    id          String    @id @default(uuid())
-    createdAt   DateTime  @default(now())
-    updatedAt   DateTime  @updatedAt
+    id          String    @id @default(cuid())
     name        String
     iconUrl     String
     description String
     members     Member[]
     channels    Channel[]
     roles       Role[]
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
 }
 
 model Member {
-    id       String   @id @default(uuid())
+    id       String   @id @default(cuid())
     joinedAt DateTime @default(now())
     userId   String
     user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -65,9 +65,7 @@ model Member {
 }
 
 model Channel {
-    id                 String                  @id @default(uuid())
-    createdAt          DateTime                @default(now())
-    updatedAt          DateTime                @updatedAt
+    id                 String                  @id @default(cuid())
     name               String
     type               ChannelType             @default(TEXT)
     isPrivate          Boolean                 @default(false)
@@ -75,10 +73,12 @@ model Channel {
     server             Server                  @relation(fields: [serverId], references: [id], onDelete: Cascade)
     channelPermissions ChannelRolePermission[]
     messages           Message[]
+    createdAt          DateTime                @default(now())
+    updatedAt          DateTime                @updatedAt
 }
 
 model Role {
-    id                 String                  @id @default(uuid())
+    id                 String                  @id @default(cuid())
     name               String
     serverId           String
     isOwner            Boolean                 @default(false)
@@ -88,7 +88,7 @@ model Role {
 }
 
 model UserRole {
-    id     String @id @default(uuid())
+    id     String @id @default(cuid())
     role   Role   @relation(fields: [roleId], references: [id])
     roleId String
     user   User   @relation(fields: [userId], references: [id])
@@ -98,7 +98,7 @@ model UserRole {
 }
 
 model ChannelRolePermission {
-    id        String   @id @default(uuid())
+    id        String   @id @default(cuid())
     role      Role?    @relation(fields: [roleId], references: [id], onDelete: Cascade)
     roleId    String?
     channel   Channel? @relation(fields: [channelId], references: [id], onDelete: Cascade)
@@ -111,7 +111,7 @@ model ChannelRolePermission {
 }
 
 model Message {
-    id        String    @id @default(uuid())
+    id        String    @id @default(cuid())
     content   String
     mentions  Mention[]
     sender    User      @relation(fields: [senderId], references: [id])
@@ -125,7 +125,7 @@ model Message {
 }
 
 model Mention {
-    id        String      @id @default(uuid())
+    id        String      @id @default(cuid())
     message   Message     @relation(fields: [messageId], references: [id], onDelete: Cascade)
     messageId String
     user      User?       @relation(fields: [userId], references: [id])

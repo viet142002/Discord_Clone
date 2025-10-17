@@ -12,7 +12,7 @@ import type { Request } from 'express';
 import { CreateServerDto } from 'src/modules/servers/dto/createServer.dto';
 import { ServersService } from 'src/modules/servers/servers.service';
 
-@Controller('servers')
+@Controller()
 export class ServersController {
     constructor(private serversService: ServersService) {}
 
